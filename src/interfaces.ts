@@ -1,34 +1,27 @@
 import {ObjectId} from 'bson'
+import {CustomUserDoc, User} from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
 
-export interface User {
-    fName: string;
-    lName: string;
-    email: string;
-    phone: string;
-}
-
-export interface UserDocInternal extends User {
-    _id: string;
-    password: string;
-}
-
-export interface SuccessfulLoginResult {
-    user: User;
-    token: string;
-}
-
-export interface CreateUserPayload extends User {
-    _id?: ObjectId;
-    password: string;
-}
-
-export interface UserSpaceHolder {
-    email: string;
-    _id: string | ObjectId;
-    notJoined: true;
+export interface WriterUser extends User {
+    books?: ObjectId[] | string []
 }
 
 export interface TokenPayload {
     user_id: string;
 }
 
+export interface Book {
+    _id: ObjectId | string;
+    title: string;
+    chapters: Chapter [];
+}
+
+export interface Chapter {
+    index: number;
+    title?: string | null;
+    text: string | null;
+}
+
+export interface LoginResult {
+    user: CustomUserDoc<WriterUser>;
+    token: string;
+}

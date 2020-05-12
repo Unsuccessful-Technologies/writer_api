@@ -1,6 +1,7 @@
 import { MongoClient, Db, ObjectId} from "mongodb";
 import config from "../config";
 import CollectionHandlers from '@unsuccessful-technologies/mongodbcollectionhandlers'
+import {Book} from "../interfaces";
 
 let db: Db
 
@@ -19,3 +20,24 @@ const dbPromise = StartDB()
 export default dbPromise
 
 export const commonCollectionHandlers = CollectionHandlers(dbPromise)
+
+export const CreateBook = async (title?: string): Promise<Book> => {
+    const Books = db.collection("Books")
+    const newBook: Book = {
+        _id: new ObjectId(),
+        title: title ? title : "Working Title",
+        chapters: [
+            {
+                index: 1,
+                title: null,
+                text: null
+            }
+        ]
+    }
+    const result = await Books.insertOne(newBook)
+    if(result.result.ok){
+        return newBook
+    } else {
+        throw new Error('Book not saved to database')
+    }
+}
