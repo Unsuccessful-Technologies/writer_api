@@ -11,6 +11,7 @@ import {
     CustomUserInternalDoc
 } from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
 import {ObjectId} from 'bson'
+import {GetPayloadHeader, isAuthentic} from "./middlewares";
 
 
 const router = Router()
@@ -63,34 +64,9 @@ const Join = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-export const isAuthentic = (req: Request, res: Response, next: NextFunction) => {
-    const token: string = req.headers['token'] as string
-    try {
-        if(!token){
-            throw new Error('Not Authorized')
-        } else {
-            const payload = verify(token,config.secret)
-            if(payload){
-                req.headers.payload = JSON.stringify(payload)
-                next()
-            } else {
-                throw new Error('Not Authorized')
-            }
-        }
-    } catch(e){
-        console.log(e.message)
-        res.status(401).json({message:e.message})
-    }
-}
-
-export const GetPayloadHeader = (req: Request): TokenPayload => {
-    const { payload } = req.headers
-    const payloadJSON: TokenPayload = JSON.parse(<string>payload)
-    return payloadJSON
-}
 
 const GetProfileHandler = async (req: Request, res: Response, next: NextFunction) => {
-    const payload = GetPayloadHeader(req)
+    const payload = GetPayloadHeader<TokenPayload>(req)
     const {user_id} = payload
 
     try {

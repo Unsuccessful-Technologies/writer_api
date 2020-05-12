@@ -41,3 +41,13 @@ export const CreateBook = async (title?: string): Promise<Book> => {
         throw new Error('Book not saved to database')
     }
 }
+
+export const GetBook = async (id: string): Promise<Book> => {
+    const _id = new ObjectId(id)
+    const query = { _id }
+    const Books = db.collection("Books")
+    const result = await Books.findOne<Book>(query)
+    console.log("Database:GetBook:\n",result)
+    return result
+}
+
