@@ -48,6 +48,7 @@ const Join = async (req: Request, res: Response, next: NextFunction) => {
         } else {
             const newBook = await CreateBook();
             user.books = [<ObjectId>newBook._id]
+            user.last_book_id_open = newBook._id.toString()
             const controllers = await commonCollectionHandlers
             const userDoc: CustomUserDoc<WriterUser> = await controllers.Users.CreateUser(user)
             const {_id} = userDoc
@@ -63,7 +64,6 @@ const Join = async (req: Request, res: Response, next: NextFunction) => {
         })
     }
 }
-
 
 const GetProfileHandler = async (req: Request, res: Response, next: NextFunction) => {
     const payload = GetPayloadHeader<TokenPayload>(req)

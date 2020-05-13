@@ -2,6 +2,7 @@ import {ObjectId} from 'bson'
 import {CustomUserDoc, User} from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
 
 export interface WriterUser extends User {
+    last_book_id_open: string;
     books?: ObjectId[] | string []
 }
 
