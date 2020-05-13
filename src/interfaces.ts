@@ -1,9 +1,13 @@
 import {ObjectId} from 'bson'
-import {CustomUserDoc, User} from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
+import {User} from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
 
-export interface WriterUser extends User {
+export interface NewWriterUser extends User {
     last_book_id_open: string;
-    books?: ObjectId[] | string []
+    book_ids: ObjectId[] | string [];
+}
+
+export interface WriterUser extends NewWriterUser {
+    book_previews: BookPreview [];
 }
 
 export interface TokenPayload {
@@ -23,6 +27,11 @@ export interface Chapter {
 }
 
 export interface LoginResult {
-    user: CustomUserDoc<WriterUser>;
+    user: WriterUser;
     token: string;
+}
+
+interface BookPreview {
+    title: string;
+    number_of_chapters: number;
 }
