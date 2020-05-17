@@ -20,34 +20,38 @@ type UserInternal = CustomUserInternalDoc<WriterUser>
 
 const router = Router()
 
+const profile_pipeline = [
+    {
+        $lookup: {
+            from: "Books",
+            let: {bookIds:"$book_ids"},
+            pipeline: [
+                {
+                    $match: {
+                        $expr: { $in: ["$_id","$$bookIds"] }
+                    }
+                },
+                {
+                    $project: {
+                        title: 1,
+                        number_of_chapters: { $cond: { if: { $isArray: "$chapters"}, then: { $size: "$chapters"}, else: 0} }
+                    }
+                }
+            ],
+            as: "books"
+        }
+    }
+]
+
 const Login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body
     const controllers = await commonCollectionHandlers
     const pipeline = [
         {
             $match: { email }
-        },
-        {
-            $lookup: {
-                from: "Books",
-                let: {bookIds:"$book_ids"},
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: { $in: ["$_id","$$bookIds"] }
-                        }
-                    },
-                    {
-                        $project: {
-                            title: 1,
-                            number_of_chapters: { $cond: { if: { $isArray: "$chapters"}, then: { $size: "$chapters"}, else: 0} }
-                        }
-                    }
-                ],
-                as: "book_previews"
-            }
-        }
+        }, ...profile_pipeline
     ]
+
     const user: UserInternal = await controllers.Users.GetUserByEmail<WriterUser>(email, pipeline)
     console.log(user)
     try {
@@ -97,9 +101,15 @@ const Join = async (req: Request, res: Response, next: NextFunction) => {
 const GetProfileHandler = async (req: Request, res: Response, next: NextFunction) => {
     const payload = GetPayloadHeader<TokenPayload>(req)
     const {user_id} = payload
-
+    const pipeline = [
+        {
+            $match: { _id: new ObjectId(user_id) }
+        }, ...profile_pipeline
+    ]
     try {
-        const result = {user_id}
+        const controllers = await commonCollectionHandlers
+        const user = await controllers.Users.GetUserById<WriterUser>(user_id,pipeline)
+        const result = await CreateSuccessfulLoginResult(user)
         res.status(200).json(result)
     } catch (e) {
         console.log(e.message)

@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/Unsuccessful-Technologies/writer_api#readme",
   "dependencies": {
-    "@unsuccessful-technologies/mongodbcollectionhandlers": "^2.0.0-rc.1",
+    "@unsuccessful-technologies/mongodbcollectionhandlers": "^2.0.0-rc.3",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/express": "^4.17.6",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/mongodb": "^3.5.16",
+    "@types/mongodb": "^3.5.17",
     "@types/node": "^13.13.6",
     "gulp": "^4.0.2",
     "gulp-typescript": "^6.0.0-alpha.1",
