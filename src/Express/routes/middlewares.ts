@@ -27,3 +27,17 @@ export function GetPayloadHeader<T> (req: Request): T {
     const payloadJSON: T = JSON.parse(<string>payload)
     return payloadJSON
 }
+
+export function HandleErrorResponse(e: Error, res: Response) {
+    console.log(e)
+    if(e.message.includes("Handled:")){
+        let message = e.message.split(":")[1]
+        res.status(400).json({
+            message
+        })
+    } else {
+        res.status(500).json({
+            message: e.message
+        })
+    }
+}

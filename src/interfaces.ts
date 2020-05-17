@@ -2,12 +2,13 @@ import {ObjectId} from 'bson'
 import {User} from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
 
 export interface NewWriterUser extends User {
+    password: string;
     last_book_id_open: string;
-    book_ids: ObjectId[] | string [];
+    book_ids: ObjectId[];
 }
 
 export interface WriterUser extends NewWriterUser {
-    book_previews: BookPreview [];
+    books: BookPreview [];
 }
 
 export interface TokenPayload {
@@ -17,13 +18,14 @@ export interface TokenPayload {
 export interface Book {
     _id: ObjectId | string;
     title: string;
-    chapters: Chapter [];
+    chapter_ids: ObjectId [];
 }
 
 export interface Chapter {
+    _id: ObjectId;
     index: number;
-    title?: string | null;
-    text: string | null;
+    title: string;
+    text: string;
 }
 
 export interface LoginResult {

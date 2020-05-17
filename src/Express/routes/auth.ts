@@ -7,16 +7,15 @@ import {
     TokenPayload, LoginResult, NewWriterUser,
 } from "../../interfaces";
 import {
+    CustomUser,
     CustomUserDoc,
     CustomUserInternalDoc
 } from "@unsuccessful-technologies/mongodbcollectionhandlers/dist/interfaces";
 import {ObjectId} from 'bson'
-import {GetPayloadHeader, isAuthentic} from "./middlewares";
+import {GetPayloadHeader, HandleErrorResponse, isAuthentic} from "./middlewares";
 
-type NewUser = CustomUserDoc<NewWriterUser>
-type User = CustomUserDoc<WriterUser>
+type NewUser = CustomUser<NewWriterUser>
 type UserInternal = CustomUserInternalDoc<WriterUser>
-
 
 const router = Router()
 
@@ -34,7 +33,7 @@ const profile_pipeline = [
                 {
                     $project: {
                         title: 1,
-                        number_of_chapters: { $cond: { if: { $isArray: "$chapters"}, then: { $size: "$chapters"}, else: 0} }
+                        number_of_chapters: { $cond: { if: { $isArray: "$chapter_ids"}, then: { $size: "$chapter_ids"}, else: 0} }
                     }
                 }
             ],
@@ -72,18 +71,16 @@ const Login = async (req: Request, res: Response, next: NextFunction) => {
 
 const Join = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user: NewWriterUser = req.body
+        const user: NewUser = CreateNewWriterUser(req.body)
+
         const { email } = user
         const controllers = await commonCollectionHandlers
         const userExists = await controllers.Users.UserExists(email)
         if(userExists){
             res.status(200).json({success: false, message: "User already exists."})
         } else {
-            const newBook = await CreateBook();
-            user.book_ids = [<ObjectId>newBook._id]
-            user.last_book_id_open = newBook._id.toString()
             const controllers = await commonCollectionHandlers
-            const userDoc: NewUser = await controllers.Users.CreateUser(user)
+            const userDoc = await controllers.Users.CreateUser(user)
             const {_id} = userDoc
             if(_id){
                 // TODO Need to verify user through email
@@ -91,10 +88,7 @@ const Join = async (req: Request, res: Response, next: NextFunction) => {
             }
         }
     } catch (e) {
-        console.log(e)
-        res.status(500).json({
-            message: e.message
-        })
+        HandleErrorResponse(e, res)
     }
 }
 
@@ -119,42 +113,6 @@ const GetProfileHandler = async (req: Request, res: Response, next: NextFunction
     }
 }
 
-// const GetToken = async (req: Request, res: Response, next: NextFunction) => {
-//     let { payload } = req.headers
-//     const payloadJSON: TokenPayload = JSON.parse(<string>payload)
-//     const {user_id} = payloadJSON
-//     const { event_id } = req.params
-//     try {
-//         const token = sign({user_id, event_id}, config.secret)
-//         res.status(200).json({token})
-//     } catch (e) {
-//         console.log(e.message)
-//         res.status(500).json({
-//             message: e.message
-//         })
-//     }
-// }
-
-// const Token = async (req: Request, res: Response, next: NextFunction) => {
-//     let { payload } = req.headers
-//     const payloadJSON = JSON.parse(<string>payload)
-//     const {user_id, event_id} = payloadJSON
-//     const {event_id: event_id_param} = req.params
-//     try {
-//         if(event_id === event_id_param){
-//             // TODO Also check if the user is allowed to authorize access to event_id
-//             res.status(200).json({allowed:true})
-//         } else {
-//             res.status(200).json({allowed:false})
-//         }
-//     } catch (e) {
-//         console.log(e.message)
-//         res.status(500).json({
-//             message: "Server Error"
-//         })
-//     }
-// }
-
 router.post("/login", Login)
 
 router.post("/join", Join)
@@ -162,10 +120,6 @@ router.post("/join", Join)
 router.use(isAuthentic)
 
 router.get("/profile", GetProfileHandler)
-
-// router.get("/token/:event_id", GetToken)
-//
-// router.get("/token/valid/:event_id", Token)
 
 export default router
 
@@ -188,4 +142,37 @@ const CreateSuccessfulLoginResult = async (user: UserInternal): Promise<LoginRes
         token
     }
     return result
+}
+
+const CreateNewWriterUser = (data:any): NewUser => {
+    const {fName,lName,phone,email,password} = data
+    let error = null
+    if(!fName || fName.length < 1){
+        error = new Error("Handled:First Name Required")
+    }
+    if(!lName || lName.length < 1){
+        error = new Error("Handled:Last Name Required")
+    }
+    if(!phone || phone.length < 1){
+        error = new Error("Handled:Phone Required")
+    }
+    if(!email || email.length < 1){
+        error = new Error("Handled:Email Required")
+    }
+    if(!password || password.length < 1){
+        error = new Error("Handled:Password Required")
+    }
+    if(error){
+        throw error
+    }
+    const user: NewUser = {
+        fName,
+        lName,
+        phone,
+        email,
+        password,
+        book_ids: [],
+        last_book_id_open: ""
+    }
+    return user
 }
