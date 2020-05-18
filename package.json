@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build && node dist/index.js",
     "build": "gulp",
-    "docker:build": "docker build -t unsuccessful/writer_api:local .",
+    "docker:build": "docker build --build-arg NPM_TOKEN=${NPM_TOKEN} -t unsuccessful/writer_api:local .",
     "docker:run": "docker run -p 8080:8080 -it --name writer_api --env-file devops/local.env unsuccessful/writer_api:local"
   },
   "repository": {
