@@ -10,10 +10,13 @@ const Server = require('http').Server
 
 
 import Auth from './routes/auth'
+import Book from './routes/book'
+
 const PrepareApp = (app: Express): Express => {
     app.use(cors())
     app.use(bodyParser.json())
     app.use('/auth', Auth)
+    app.use('/book', Book)
     return app
 }
 
